@@ -15,12 +15,12 @@ Welcome to my GitHub! I'm passionate about **software testing**, **quality assur
 - **Winner** of the **2023 Software Test Design Competition (Solo Entry)**
 
 ### 🎓 Certifications
-- **Fundamental Information Technology Engineer (IPA, 2007)**
+- **Fundamental Information Technology Engineer Examination (IPA, 2007)**
 - **Applied Information Technology Engineer Examination (IPA, 2010)**
 - **Registered Scrum Master™ (Scrum Inc., 2019)**
 - **Registered Product Owner™ (Scrum Inc., 2021)**
 
 ### 🔗 Connect with Me
-- [X (formerly Twitter)](https://x.com/tyngw)
-- [Blog: "Testing Asika"](https://tyngw.hatenablog.com)
-- [Qiita Articles](https://qiita.com/tyngw)
+- [X (Twitter)](https://x.com/tyngw)
+- [Blog: "テストするアシカ"](https://tyngw.hatenablog.com)
+- [qiita](https://qiita.com/tyngw)
