@@ -13,8 +13,9 @@ Welcome to my GitHub! I'm passionate about **software testing**, **quality assur
 
 ### 🏆 Highlights
 - **Winner** of the **2023 Software Test Design Competition (Solo Entry)**
-- **Speaker** at [IEEE International Symposium on Software Reliability Engineering (ISSRE) 2024 ASTER SESSION](https://issre.github.io/2024/ss_program_aster.html)
-- **Speaker** at [JaSST'25 Tokyo Day 2, Session A7](https://jasst.jp/symposium/jasst25tokyo/pdf/A7.pdf)
+- **Speaker** at [MagicPod Meetup Health Score Night](https://speakerdeck.com/recruitengineers/herususukoanogai-shan-noguo-cheng-deqi-kitaxi-siibian-hua) (July 5, 2024)
+- **Speaker** at [IEEE International Symposium on Software Reliability Engineering (ISSRE) 2024 ASTER SESSION](https://issre.github.io/2024/ss_program_aster.html) (October 29, 2024)
+- **Speaker** at [JaSST'25 Tokyo Day 2, Session A7](https://jasst.jp/symposium/jasst25tokyo/pdf/A7.pdf) (March 28, 2025)
 
 ### 🎓 Certifications
 - **Fundamental Information Technology Engineer Examination (IPA, 2007)**
