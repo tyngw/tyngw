@@ -9,7 +9,20 @@ const sortedPosts = allBlogPosts.sort(
 );
 
 // Get all unique tags
-const allTags = [...new Set(allBlogPosts.flatMap(post => post.data.tags || []))];
+const allTags = [...new Set(allBlogPosts.flatMap(post => post.data.tags || []))].sort();
+
+// Get all unique years
+const allYears = [...new Set(sortedPosts.map(post => post.data.pubDate.getFullYear()))].sort((a, b) => b - a);
+
+// Serialize posts data for client-side filtering
+const postsData = sortedPosts.map(post => ({
+  title: post.data.title,
+  description: post.data.description,
+  pubDate: post.data.pubDate.toISOString(),
+  slug: post.slug,
+  tags: post.data.tags || [],
+  year: post.data.pubDate.getFullYear(),
+}));
 ---
 
 <BaseLayout title="Blog - Asika (tyngw)" description="Articles about software testing, QA, and test automation">
@@ -21,18 +34,55 @@ const allTags = [...new Set(allBlogPosts.flatMap(post => post.data.tags || []))]
       </p>
     </header>
 
-    {allTags.length > 0 && (
-      <div class="mb-8">
-        <h2 class="text-sm font-semibold text-gray-700 mb-3">Tags:</h2>
-        <div class="flex flex-wrap gap-2">
-          {allTags.map((tag) => (
-            <span class="px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded-full text-sm hover:bg-gray-50 cursor-pointer">
-              {tag}
-            </span>
-          ))}
+    <!-- Filters Section -->
+    <div class="mb-8 bg-white p-6 rounded-lg shadow-md">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <div class="flex items-center gap-4">
+          <h2 class="text-sm font-semibold text-gray-700">絞り込み:</h2>
+          <button
+            id="clear-filters"
+            class="text-sm text-primary-600 hover:text-primary-700 font-medium hidden"
+          >
+            フィルタをクリア
+          </button>
+        </div>
+        <div class="text-sm text-gray-600">
+          <span id="post-count">{sortedPosts.length}</span> 件の記事
         </div>
       </div>
-    )}
+
+      {allTags.length > 0 && (
+        <div class="mb-4">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3">タグ:</h3>
+          <div class="flex flex-wrap gap-2" id="tag-filters">
+            {allTags.map((tag) => (
+              <button
+                class="tag-filter px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded-full text-sm hover:bg-primary-50 hover:border-primary-500 hover:text-primary-700 transition-colors"
+                data-tag={tag}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {allYears.length > 1 && (
+        <div>
+          <h3 class="text-sm font-semibold text-gray-700 mb-3">年:</h3>
+          <div class="flex flex-wrap gap-2" id="year-filters">
+            {allYears.map((year) => (
+              <button
+                class="year-filter px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded-full text-sm hover:bg-primary-50 hover:border-primary-500 hover:text-primary-700 transition-colors"
+                data-year={year}
+              >
+                {year}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
 
     {sortedPosts.length === 0 ? (
       <div class="text-center py-16 bg-white rounded-lg shadow-md">
@@ -43,17 +93,180 @@ const allTags = [...new Set(allBlogPosts.flatMap(post => post.data.tags || []))]
         <p class="text-gray-500">Check back soon for new content!</p>
       </div>
     ) : (
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sortedPosts.map((post) => (
-          <BlogCard
-            title={post.data.title}
-            description={post.data.description}
-            pubDate={post.data.pubDate}
-            slug={post.slug}
-            tags={post.data.tags}
-          />
-        ))}
-      </div>
+      <>
+        <div id="blog-posts-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {sortedPosts.map((post) => (
+            <div
+              class="blog-post-item"
+              data-tags={JSON.stringify(post.data.tags || [])}
+              data-year={post.data.pubDate.getFullYear()}
+            >
+              <BlogCard
+                title={post.data.title}
+                description={post.data.description}
+                pubDate={post.data.pubDate}
+                slug={post.slug}
+                tags={post.data.tags}
+              />
+            </div>
+          ))}
+        </div>
+
+        <div id="no-results" class="hidden text-center py-16 bg-white rounded-lg shadow-md">
+          <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <h2 class="text-xl font-semibold text-gray-700 mb-2">該当する記事が見つかりません</h2>
+          <p class="text-gray-500">フィルタ条件を変更してお試しください</p>
+        </div>
+      </>
     )}
   </div>
 </BaseLayout>
+
+<script>
+  // Blog post filtering functionality
+  interface Filters {
+    tags: Set<string>;
+    years: Set<number>;
+  }
+
+  const filters: Filters = {
+    tags: new Set(),
+    years: new Set(),
+  };
+
+  function updatePostVisibility() {
+    const postItems = document.querySelectorAll('.blog-post-item');
+    const noResults = document.getElementById('no-results');
+    const postCount = document.getElementById('post-count');
+    const clearButton = document.getElementById('clear-filters');
+    const grid = document.getElementById('blog-posts-grid');
+
+    let visibleCount = 0;
+
+    postItems.forEach((item) => {
+      const postElement = item as HTMLElement;
+      const postTags: string[] = JSON.parse(postElement.dataset.tags || '[]');
+      const postYear = parseInt(postElement.dataset.year || '0');
+
+      let shouldShow = true;
+
+      // Filter by tags (AND logic - post must have all selected tags)
+      if (filters.tags.size > 0) {
+        shouldShow = Array.from(filters.tags).every(tag => postTags.includes(tag));
+      }
+
+      // Filter by year (OR logic - post can be from any selected year)
+      if (shouldShow && filters.years.size > 0) {
+        shouldShow = filters.years.has(postYear);
+      }
+
+      if (shouldShow) {
+        postElement.classList.remove('hidden');
+        visibleCount++;
+      } else {
+        postElement.classList.add('hidden');
+      }
+    });
+
+    // Update post count
+    if (postCount) {
+      postCount.textContent = visibleCount.toString();
+    }
+
+    // Show/hide no results message
+    if (noResults && grid) {
+      if (visibleCount === 0) {
+        grid.classList.add('hidden');
+        noResults.classList.remove('hidden');
+      } else {
+        grid.classList.remove('hidden');
+        noResults.classList.add('hidden');
+      }
+    }
+
+    // Show/hide clear filters button
+    if (clearButton) {
+      if (filters.tags.size > 0 || filters.years.size > 0) {
+        clearButton.classList.remove('hidden');
+      } else {
+        clearButton.classList.add('hidden');
+      }
+    }
+  }
+
+  function toggleFilter(filterType: 'tag' | 'year', value: string | number) {
+    const filterSet = filterType === 'tag' ? filters.tags : filters.years;
+    const valueToToggle = filterType === 'tag' ? value as string : value as number;
+
+    if (filterSet.has(valueToToggle as any)) {
+      filterSet.delete(valueToToggle as any);
+    } else {
+      filterSet.add(valueToToggle as any);
+    }
+
+    updatePostVisibility();
+    updateFilterButtons();
+  }
+
+  function updateFilterButtons() {
+    // Update tag filter buttons
+    document.querySelectorAll('.tag-filter').forEach((button) => {
+      const tag = (button as HTMLElement).dataset.tag;
+      if (tag && filters.tags.has(tag)) {
+        button.classList.add('bg-primary-500', 'text-white', 'border-primary-500');
+        button.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
+      } else {
+        button.classList.remove('bg-primary-500', 'text-white', 'border-primary-500');
+        button.classList.add('bg-white', 'text-gray-700', 'border-gray-300');
+      }
+    });
+
+    // Update year filter buttons
+    document.querySelectorAll('.year-filter').forEach((button) => {
+      const year = parseInt((button as HTMLElement).dataset.year || '0');
+      if (filters.years.has(year)) {
+        button.classList.add('bg-primary-500', 'text-white', 'border-primary-500');
+        button.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
+      } else {
+        button.classList.remove('bg-primary-500', 'text-white', 'border-primary-500');
+        button.classList.add('bg-white', 'text-gray-700', 'border-gray-300');
+      }
+    });
+  }
+
+  function clearAllFilters() {
+    filters.tags.clear();
+    filters.years.clear();
+    updatePostVisibility();
+    updateFilterButtons();
+  }
+
+  // Event listeners
+  document.addEventListener('DOMContentLoaded', () => {
+    // Tag filter buttons
+    document.querySelectorAll('.tag-filter').forEach((button) => {
+      button.addEventListener('click', () => {
+        const tag = (button as HTMLElement).dataset.tag;
+        if (tag) {
+          toggleFilter('tag', tag);
+        }
+      });
+    });
+
+    // Year filter buttons
+    document.querySelectorAll('.year-filter').forEach((button) => {
+      button.addEventListener('click', () => {
+        const year = parseInt((button as HTMLElement).dataset.year || '0');
+        toggleFilter('year', year);
+      });
+    });
+
+    // Clear filters button
+    const clearButton = document.getElementById('clear-filters');
+    if (clearButton) {
+      clearButton.addEventListener('click', clearAllFilters);
+    }
+  });
+</script>

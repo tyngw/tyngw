@@ -42,9 +42,12 @@ const { title, description, pubDate, updatedDate, heroImage, tags } = Astro.prop
       {tags && tags.length > 0 && (
         <div class="flex flex-wrap gap-2">
           {tags.map((tag) => (
-            <span class="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm">
+            <a
+              href={`/blog/tag/${tag}`}
+              class="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm hover:bg-primary-200 transition-colors"
+            >
               {tag}
-            </span>
+            </a>
           ))}
         </div>
       )}
