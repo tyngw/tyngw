@@ -26,3 +26,37 @@ Welcome to my GitHub! I'm passionate about **software testing**, **quality assur
 - [X (Twitter)](https://x.com/tyngw)
 - [Blog: "テストするアシカ"](https://tyngw.hatenablog.com)
 - [qiita](https://qiita.com/tyngw)
+
+---
+
+## 🌐 Portfolio Website
+
+This repository contains my personal portfolio and blog website, built with modern web technologies and deployed on GitHub Pages.
+
+### Tech Stack
+
+- **Astro** - Modern static site generator
+- **TypeScript** - Type-safe development
+- **Tailwind CSS** - Utility-first CSS framework
+- **MDX** - Enhanced Markdown with component support
+- **GitHub Actions** - Automated deployment
+
+### Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+### Deployment
+
+The site is automatically deployed to GitHub Pages when changes are pushed to the main branch via GitHub Actions.

@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PortfolioCard from '../../components/PortfolioCard.astro';
+import { getCollection } from 'astro:content';
+
+const allPortfolio = await getCollection('portfolio');
+const sortedPortfolio = allPortfolio.sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const featuredProjects = sortedPortfolio.filter(item => item.data.featured);
+const otherProjects = sortedPortfolio.filter(item => !item.data.featured);
+---
+
+<BaseLayout title="Portfolio - Asika (tyngw)" description="Projects, achievements, and contributions in software testing">
+  <div class="max-w-6xl mx-auto">
+    <header class="mb-12">
+      <h1 class="text-4xl font-bold mb-4 text-gray-900">Portfolio</h1>
+      <p class="text-lg text-gray-600">
+        Showcasing my work in software testing, speaking engagements, and professional achievements
+      </p>
+    </header>
+
+    {featuredProjects.length > 0 && (
+      <section class="mb-12">
+        <h2 class="text-2xl font-bold mb-6 text-gray-900">Featured Projects</h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {featuredProjects.map((project) => (
+            <PortfolioCard
+              title={project.data.title}
+              description={project.data.description}
+              date={project.data.date}
+              slug={project.slug}
+              tags={project.data.tags}
+              link={project.data.link}
+              image={project.data.image}
+              featured={project.data.featured}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+
+    {otherProjects.length > 0 && (
+      <section>
+        <h2 class="text-2xl font-bold mb-6 text-gray-900">
+          {featuredProjects.length > 0 ? 'Other Projects' : 'All Projects'}
+        </h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {otherProjects.map((project) => (
+            <PortfolioCard
+              title={project.data.title}
+              description={project.data.description}
+              date={project.data.date}
+              slug={project.slug}
+              tags={project.data.tags}
+              link={project.data.link}
+              image={project.data.image}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+
+    {sortedPortfolio.length === 0 && (
+      <div class="text-center py-16 bg-white rounded-lg shadow-md">
+        <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+        <h2 class="text-xl font-semibold text-gray-700 mb-2">No projects yet</h2>
+        <p class="text-gray-500">Check back soon for new projects and achievements!</p>
+      </div>
+    )}
+  </div>
+</BaseLayout>
